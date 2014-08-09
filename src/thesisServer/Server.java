@@ -1,11 +1,14 @@
 package thesisServer;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.ServerSocket;
@@ -35,8 +38,29 @@ public class Server {
 				
 				long beginning = System.nanoTime();
 				
-				transcode();
+				File source = new File("source.mp4");
+				File target = new File("target.avi");
 				
+				transcode(source, target);
+				
+				byte[] buffer = new byte[8192];
+			    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(target));
+			    dataInputStream = new DataInputStream(bis);
+			    
+			    try {
+			    	dataOutputStream = new DataOutputStream(socket.getOutputStream());
+			    	dataOutputStream.writeUTF(target.getName());
+			        int count;
+			        while((count = dataInputStream.read(buffer)) > 0){
+			        	dataOutputStream.write(buffer, 0, count);
+			        }
+
+			    } catch (IOException e) {
+			        // TODO Auto-generated catch block
+			        e.printStackTrace();
+			    }
+				
+				/*
 				dataInputStream = new DataInputStream(socket.getInputStream());
 				dataOutputStream = new DataOutputStream(
 						socket.getOutputStream());
@@ -47,6 +71,7 @@ public class Server {
 				//System.out.println("Base: " + base + " Power: " + power);
 				
 				dataOutputStream.writeUTF(bigPower(base, power).toString());
+				*/
 				
 				long end = System.nanoTime();
 				
@@ -107,19 +132,17 @@ public class Server {
 		return resul;
 	}
 	
-	public static void transcode(){
-		File source = new File("source.mp4");
-		File target = new File("target.avi");
+	public static void transcode(File source, File target){
 		AudioAttributes audioAttributes = new AudioAttributes();
 		audioAttributes.setCodec("libmp3lame");
-		audioAttributes.setBitRate(new Integer(128000));
+		audioAttributes.setBitRate(new Integer(96000/*128000*/));
 		audioAttributes.setChannels(new Integer(2));
-		audioAttributes.setSamplingRate(new Integer(44100));
+		audioAttributes.setSamplingRate(new Integer(48000/*44100*/));
 		VideoAttributes videoAttributes = new VideoAttributes();
 		videoAttributes.setCodec("mpeg4");
 		videoAttributes.setBitRate(new Integer(160000));
-		videoAttributes.setFrameRate(new Integer(15));
-		videoAttributes.setSize(new VideoSize(400, 300));
+		videoAttributes.setFrameRate(new Integer(30/*15*/));
+		videoAttributes.setSize(new VideoSize(1920, 1080/*400, 300*/));
 		EncodingAttributes attributes = new EncodingAttributes();
 		attributes.setFormat("avi");
 		attributes.setAudioAttributes(audioAttributes);
