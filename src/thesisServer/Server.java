@@ -28,6 +28,9 @@ public class Server {
 	// If OPTION == 2 we assume file will be sent by the Client
 	// Check Client app for consistency purposes
 	private static final int OPTION = 2;
+	
+	static long beginning;
+	static long end;
 
 	public static void main(String[] args) {
 		ServerSocket serverSocket = null;
@@ -46,8 +49,6 @@ public class Server {
 		while (true) {
 			try {
 				socket = serverSocket.accept();
-
-				long beginning = System.nanoTime();
 
 				switch (OPTION) {
 				case 1:
@@ -74,9 +75,7 @@ public class Server {
 				 * dataOutputStream.writeUTF(bigPower(base, power).toString());
 				 */
 
-				long end = System.nanoTime();
-
-				System.out.println("Time elapsed: " + (end - beginning) + "ns");
+				System.out.println("Time elapsed: " + (end - beginning) + "ns\n");
 
 				try (PrintWriter out = new PrintWriter(new BufferedWriter(
 						new FileWriter("Server.txt", true)))) {
@@ -139,7 +138,6 @@ public class Server {
 			dataOutputStream.writeUTF(target.getName());
 			int count;
 			while ((count = dataInputStream.read(buffer)) > 0) {
-				System.out.println(count);
 				dataOutputStream.write(buffer, 0, count);
 			}
 
@@ -230,6 +228,8 @@ public class Server {
 	}
 
 	public static void transcode(File source, File target) {
+		beginning = System.nanoTime();
+		
 		AudioAttributes audioAttributes = new AudioAttributes();
 		audioAttributes.setCodec("libmp3lame");
 		audioAttributes.setBitRate(new Integer(96000/* 128000 */));
@@ -252,6 +252,8 @@ public class Server {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		
+		end = System.nanoTime();
 	}
 
 }
